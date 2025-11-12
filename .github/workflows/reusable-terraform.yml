@@ -1,0 +1,56 @@
+name: reusable-terraform
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+      var-file:
+        required: false
+        type: string
+      backend-key:
+        required: true
+        type: string
+    secrets:
+      ROLE_ARN:
+        required: true
+      AWS_REGION:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=tfstate-ml-sandbox" \
+            -backend-config="key=${{ inputs.backend-key }}" \
+            -backend-config="region=${{ secrets.AWS_REGION }}" \
+            -backend-config="dynamodb_table=tfstate-ml-locks"
+
+      - name: Terraform Plan or Apply
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            terraform plan -var-file="${{ inputs.var-file }}" -out=tfplan || exit 1
+          else
+            terraform plan -var-file="${{ inputs.var-file }}" -out=tfplan
+            terraform apply -auto-approve tfplan
+          fi
