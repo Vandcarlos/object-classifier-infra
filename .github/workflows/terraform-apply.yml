@@ -6,33 +6,42 @@ on:
 
 jobs:
   tf-backend:
+    permissions:
+      id-token: write
+      contents: read
     uses: ./.github/workflows/reusable-terraform.yml
     with:
       working-directory: global/tf-backend
       backend-key: infra/tf-backend/terraform.tfstate
       var-file: variables.tf
     secrets:
-      ROLE_ARN: arn:aws:iam::<ACC_ID>:role/oc-infra-deployer
-      AWS_REGION: us-east-1
+      ROLE_ARN: ${{ secrets.OC_INFRA_DEPLOYER_ROLE_ARN }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
 
   iam:
     needs: tf-backend
+    permissions:
+      id-token: write
+      contents: read
     uses: ./.github/workflows/reusable-terraform.yml
     with:
       working-directory: global/iam
       backend-key: infra/iam/terraform.tfstate
       var-file: terraform.tfvars
     secrets:
-      ROLE_ARN: arn:aws:iam::<ACC_ID>:role/oc-infra-deployer
-      AWS_REGION: us-east-1
+      ROLE_ARN: ${{ secrets.OC_INFRA_DEPLOYER_ROLE_ARN }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
 
   artifacts:
     needs: iam
+    permissions:
+      id-token: write
+      contents: read
     uses: ./.github/workflows/reusable-terraform.yml
     with:
       working-directory: global/artifacts
       backend-key: infra/artifacts/terraform.tfstate
       var-file: producers_consumers.tfvars
     secrets:
-      ROLE_ARN: arn:aws:iam::<ACC_ID>:role/oc-infra-deployer
-      AWS_REGION: us-east-1
+      ROLE_ARN: ${{ secrets.OC_INFRA_DEPLOYER_ROLE_ARN }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
