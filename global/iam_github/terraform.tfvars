@@ -4,6 +4,5 @@ allowed_repos = {
     name       = "object-classifier-model"
     role_name  = "oc-model-deployer"
     allow_main = true
-    workflows  = ["deploy.yml"]
   }
 }

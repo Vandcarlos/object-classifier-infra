@@ -4,7 +4,3 @@ producers = {
     project_key = "object-classifier"
   }
 }
-
-consumers = {
-
-}
