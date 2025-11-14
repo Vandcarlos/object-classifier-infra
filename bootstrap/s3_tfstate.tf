@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "tf_state" {
-  bucket = var.state_bucket_name # ex: "tfstate-ml-sandbox"
+  bucket = var.state_bucket_name
 }
 
 resource "aws_s3_bucket_versioning" "tf_state" {
