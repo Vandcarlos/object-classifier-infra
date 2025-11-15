@@ -1,43 +1,42 @@
-locals {
-  allowed_principal = aws_iam_role.github_actions.arn
-}
-
-data "aws_iam_policy_document" "tfstate_bucket" {
-  # ListBucket restrito por prefixo
+data "aws_iam_policy_document" "tf_state_bucket_policy" {
   statement {
-    sid       = "AllowList_TFState"
-    effect    = "Allow"
-    actions   = ["s3:ListBucket"]
-    resources = [aws_s3_bucket.tf_state.arn]
+    sid    = "AllowInfraRoleList"
+    effect = "Allow"
+
     principals {
       type        = "AWS"
-      identifiers = [local.allowed_principal]
+      identifiers = [aws_iam_role.oc_infra_deployer.arn]
     }
-    condition {
-      test     = "StringLike"
-      variable = "s3:prefix"
-      values   = ["${var.infra_repo.name}/*"]
-    }
+
+    actions = ["s3:ListBucket"]
+    resources = [
+      aws_s3_bucket.tf_state.arn,
+    ]
   }
 
   statement {
-    sid    = "AllowCRUD_TFState"
+    sid    = "AllowInfraRoleCrudObjects"
     effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.oc_infra_deployer.arn]
+    }
+
     actions = [
       "s3:GetObject",
       "s3:PutObject",
       "s3:DeleteObject",
-      "s3:AbortMultipartUpload"
+      "s3:AbortMultipartUpload",
     ]
-    resources = ["${aws_s3_bucket.tf_state.arn}/${var.infra_repo.name}/*"]
-    principals {
-      type        = "AWS"
-      identifiers = [local.allowed_principal]
-    }
+
+    resources = [
+      "${aws_s3_bucket.tf_state.arn}/*",
+    ]
   }
 }
 
-resource "aws_s3_bucket_policy" "tfstate_bucket" {
-  bucket = var.state_bucket_name
-  policy = data.aws_iam_policy_document.tfstate_bucket.json
+resource "aws_s3_bucket_policy" "tf_state" {
+  bucket = aws_s3_bucket.tf_state.id
+  policy = data.aws_iam_policy_document.tf_state_bucket_policy.json
 }

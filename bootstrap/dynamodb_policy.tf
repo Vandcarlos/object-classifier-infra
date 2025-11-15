@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "lock_table" {
     resources = [aws_dynamodb_table.tf_lock.arn]
     principals {
       type        = "AWS"
-      identifiers = [aws_iam_role.github_actions.arn]
+      identifiers = [aws_iam_role.oc_infra_deployer.arn]
     }
   }
 }
