@@ -1,106 +1,128 @@
-data "aws_caller_identity" "me" {}
-
-locals {
-  producer_arns = {
-    for k, v in var.producers :
-    k => "arn:aws:iam::${data.aws_caller_identity.me.account_id}:role/${v.role_name}"
-  }
-  consumer_arns = {
-    for k, v in var.consumers :
-    k => "arn:aws:iam::${data.aws_caller_identity.me.account_id}:role/${v.role_name}"
-  }
-}
-
 data "aws_iam_policy_document" "artifacts_bp" {
-  # List para produtores e consumidores nos seus prefixos
+
+  ########################################
+  # Producers: podem ler/escrever no seu prefixo
+  ########################################
+  # Permissão de Put/Get/Delete no prefixo
   dynamic "statement" {
     for_each = var.producers
     content {
-      sid       = "ListRaw_${statement.key}"
-      effect    = "Allow"
-      actions   = ["s3:ListBucket"]
-      resources = ["arn:aws:s3:::${var.artifacts_bucket_name}"]
+      sid    = "ProducerObjects_${statement.key}"
+      effect = "Allow"
+
       principals {
         type        = "AWS"
-        identifiers = [local.producer_arns[statement.key]]
+        identifiers = [statement.value.arn]
       }
-      condition {
-        test     = "StringLike"
-        variable = "s3:prefix"
-        values   = ["raw/${statement.value.project_key}/*"]
-      }
-    }
-  }
-  dynamic "statement" {
-    for_each = var.consumers
-    content {
-      sid       = "ListConverted_${statement.key}"
-      effect    = "Allow"
-      actions   = ["s3:ListBucket"]
-      resources = ["arn:aws:s3:::${var.artifacts_bucket_name}"]
-      principals {
-        type        = "AWS"
-        identifiers = [local.consumer_arns[statement.key]]
-      }
-      condition {
-        test     = "StringLike"
-        variable = "s3:prefix"
-        values   = ["converted/${statement.value.project_key}/*"]
-      }
+
+      actions = [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject",
+      ]
+
+      resources = [
+        "${aws_s3_bucket.artifacts.arn}/${statement.value.prefix}*",
+      ]
     }
   }
 
-  # Produtores: CRUD só em raw/<project>/*
+  # Permissão de ListBucket, restrita ao prefixo
   dynamic "statement" {
     for_each = var.producers
     content {
-      sid       = "ProducerRawCRUD_${statement.key}"
-      effect    = "Allow"
-      actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:PutObjectTagging"]
-      resources = ["arn:aws:s3:::${var.artifacts_bucket_name}/raw/${statement.value.project_key}/*"]
+      sid    = "ProducerList_${statement.key}"
+      effect = "Allow"
+
       principals {
         type        = "AWS"
-        identifiers = [local.producer_arns[statement.key]]
+        identifiers = [statement.value.arn]
+      }
+
+      actions   = ["s3:ListBucket"]
+      resources = [aws_s3_bucket.artifacts.arn]
+
+      condition {
+        test     = "StringLike"
+        variable = "s3:prefix"
+        values   = ["${statement.value.prefix}*"]
       }
     }
   }
 
-  # Consumidores: Get só em converted/<project>/*
+  ########################################
+  # Consumers: só leitura no prefixo
+  ########################################
   dynamic "statement" {
     for_each = var.consumers
     content {
-      sid       = "ConsumerConvertedGet_${statement.key}"
-      effect    = "Allow"
-      actions   = ["s3:GetObject", "s3:GetObjectTagging"]
-      resources = ["arn:aws:s3:::${var.artifacts_bucket_name}/converted/${statement.value.project_key}/*"]
+      sid    = "ConsumerObjects_${statement.key}"
+      effect = "Allow"
+
       principals {
         type        = "AWS"
-        identifiers = [local.consumer_arns[statement.key]]
+        identifiers = [statement.value.arn]
+      }
+
+      actions = [
+        "s3:GetObject",
+      ]
+
+      resources = [
+        "${aws_s3_bucket.artifacts.arn}/${statement.value.prefix}*",
+      ]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = var.consumers
+    content {
+      sid    = "ConsumerList_${statement.key}"
+      effect = "Allow"
+
+      principals {
+        type        = "AWS"
+        identifiers = [statement.value.arn]
+      }
+
+      actions   = ["s3:ListBucket"]
+      resources = [aws_s3_bucket.artifacts.arn]
+
+      condition {
+        test     = "StringLike"
+        variable = "s3:prefix"
+        values   = ["${statement.value.prefix}*"]
       }
     }
   }
 
+  ########################################
+  # Converter (opcional): full access no bucket
+  ########################################
   dynamic "statement" {
     for_each = var.converter_role_arn == null ? [] : [1]
     content {
-      sid    = "ConverterRW"
+      sid    = "ConverterFullAccess"
       effect = "Allow"
-      actions = [
-        "s3:GetObject", "s3:PutObject", "s3:DeleteObject",
-        "s3:AbortMultipartUpload", "s3:PutObjectTagging"
-      ]
-      resources = [
-        "arn:aws:s3:::${var.artifacts_bucket_name}/raw/*",
-        "arn:aws:s3:::${var.artifacts_bucket_name}/converted/*",
-        "arn:aws:s3:::${var.artifacts_bucket_name}/manifests/*"
-      ]
+
       principals {
         type        = "AWS"
         identifiers = [var.converter_role_arn]
       }
+
+      actions = [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucket",
+      ]
+
+      resources = [
+        aws_s3_bucket.artifacts.arn,
+        "${aws_s3_bucket.artifacts.arn}/*",
+      ]
     }
   }
-
 }
 
 resource "aws_s3_bucket_policy" "artifacts" {
