@@ -1,8 +1,3 @@
-variable "artifacts_bucket_name" {
-  type    = string
-  default = "ml-artifacts"
-}
-
 resource "aws_s3_bucket" "artifacts" {
   bucket = var.artifacts_bucket_name
 }
