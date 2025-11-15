@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "assume_role_infra" {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
-        "repo:${var.infra_repo.owner}/${var.infra_repo.name}:ref:refs/heads/*"
+        "repo:${var.infra_repo.owner}/${var.infra_repo.name}:*"
       ]
     }
 
