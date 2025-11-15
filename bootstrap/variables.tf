@@ -1,9 +1,15 @@
+variable "project" {
+  type    = string
+  default = "object-classifier"
+}
+
 variable "aws_region" {
   type    = string
   default = "us-east-1"
 }
 
 variable "infra_repo" {
+  description = "Repositório de infra que pode assumir a role oc-infra-deployer"
   type = object({
     owner     = string
     name      = string
@@ -17,11 +23,13 @@ variable "infra_repo" {
 }
 
 variable "state_bucket_name" {
-  type    = string
-  default = "tfstate-vandcarlos-object-classifier"
+  type        = string
+  description = "Nome do bucket S3 para Terraform state"
+  default     = "tfstate-vandcarlos-object-classifier"
 }
 
 variable "lock_table_name" {
-  type    = string
-  default = "tf-state-locks"
+  type        = string
+  description = "Nome da tabela DynamoDB para Terraform lock"
+  default     = "tfstate-ml-locks"
 }

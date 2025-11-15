@@ -1,5 +1,11 @@
 resource "aws_s3_bucket" "tf_state" {
   bucket = var.state_bucket_name
+
+  tags = {
+    Project = var.project
+    Stack   = "bootstrap"
+    Purpose = "terraform-state"
+  }
 }
 
 resource "aws_s3_bucket_versioning" "tf_state" {
@@ -21,7 +27,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state" {
 }
 
 resource "aws_s3_bucket_public_access_block" "tf_state" {
-  bucket                  = aws_s3_bucket.tf_state.id
+  bucket = aws_s3_bucket.tf_state.id
+
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true

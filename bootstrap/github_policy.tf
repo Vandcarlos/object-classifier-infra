@@ -1,5 +1,3 @@
-data "aws_caller_identity" "current" {}
-
 data "aws_iam_policy_document" "github_actions_permissions" {
   statement {
     sid    = "AllowManageOcRoles"
@@ -13,7 +11,8 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       "iam:DeleteRolePolicy",
       "iam:AttachRolePolicy",
       "iam:DetachRolePolicy",
-      "iam:UpdateAssumeRolePolicy"
+      "iam:UpdateAssumeRolePolicy",
+      "iam:GetRole"
     ]
     resources = [
       "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/oc-*"
@@ -23,6 +22,6 @@ data "aws_iam_policy_document" "github_actions_permissions" {
 
 resource "aws_iam_role_policy" "github_actions_inline" {
   name   = "github-actions-permissions"
-  role   = aws_iam_role.github_actions.name
+  role   = aws_iam_role.oc_infra_deployer.name
   policy = data.aws_iam_policy_document.github_actions_permissions.json
 }
