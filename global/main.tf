@@ -32,7 +32,7 @@ module "iam_github" {
 module "artifacts" {
   source = "./storage/artifacts"
 
-  artifacts_bucket_name = "ml-artifacts-${data.aws_caller_identity.me.account_id}}=${env}"
+  artifacts_bucket_name = "ml-artifacts-${data.aws_caller_identity.me.account_id}}=${var.env}"
 
   producers = {
     model = {
