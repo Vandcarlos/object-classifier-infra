@@ -8,13 +8,11 @@ variable "infra_repo" {
     owner     = string
     name      = string
     role_name = string
-    workflows = list(string)
   })
   default = {
     owner     = "Vandcarlos"
     name      = "object-classifier-infra"
     role_name = "oc-infra-deployer"
-    workflows = ["terraform-plan.yml", "terraform-apply.yml"]
   }
 }
 

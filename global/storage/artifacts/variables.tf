@@ -1,3 +1,7 @@
+variable "artifacts_bucket_name" {
+  type    = string
+}
+
 variable "producers" {
   type = map(object({
     role_name : string

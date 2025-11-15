@@ -5,8 +5,6 @@ variable "allowed_repos" {
     owner     = string
     name      = string
     role_name = string
-    allow_main = bool
-    workflows  = list(string) # ex: ["deploy.yml"]
   }))
   default = {}
 }

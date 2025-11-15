@@ -18,12 +18,7 @@ data "aws_iam_policy_document" "assume_role" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values = concat(
-        each.value.allow_main ? ["repo:${each.value.owner}/${each.value.name}:*"] : [],
-        length(each.value.workflows) > 0 ?
-        [for w in each.value.workflows : "repo:${each.value.owner}/${each.value.name}:workflow:${w}"] :
-        ["repo:${each.value.owner}/${each.value.name}:*"] # fallback amplo se não configurar
-      )
+      values   = ["repo:${each.value.owner}/${each.value.name}:*"]
     }
   }
 }

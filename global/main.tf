@@ -12,37 +12,29 @@ terraform {
 data "aws_caller_identity" "me" {}
 
 module "iam_github" {
-  source = "iam_github"
+  source = "./iam_github"
 
-  aws_region = var.aws_region
-  repos = {
+  allowed_repos = {
     model = {
       owner     = "Vandcarlos"
       name      = "object-classifier-model"
       role_name = "oc-model-deployer"
     }
-    api = {
-      owner     = "Vandcarlos"
-      name      = "object-classifier-api"
-      role_name = "oc-api-deployer"
-    }
   }
 }
 
 module "artifacts" {
-  source = "storage/artifacts"
+  source = "./storage/artifacts"
 
-  bucket_name = "oc-artifacts-vandcarlos-ml"
+  artifacts_bucket_name = "ml-artifacts-${data.aws_caller_identity.me.account_id}"
+
   producers = {
     model = {
-      role_arn   = module.iam_github.roles["model"].arn
-      prefix     = "models/"
+      role_name   = module.iam_github.roles["model"].role_name
+      project_key = module.iam_github.roles["model"].name
     }
   }
+
   consumers = {
-    api = {
-      role_arn = module.iam_github.roles["api"].arn
-      prefix   = "models/"
-    }
   }
 }
