@@ -28,18 +28,18 @@ module "artifacts_bucket" {
 
   producers = {
     model = {
-      arn    = module.iam_roles.oc_model_deployer_role_arn
+      arn    = module.iam_github.oc_model_deployer_role_arn
       prefix = "models/"
     }
     inference = {
-      arn    = module.iam_roles.oc_inference_deployer_role_arn
+      arn    = module.iam_github.oc_inference_deployer_role_arn
       prefix = "inference/"
     }
   }
 
   consumers = {
     api = {
-      arn    = module.iam_roles.oc_api_deployer_role_arn
+      arn    = module.iam_github.oc_api_deployer_role_arn
       prefix = "inference/"   # API lê a saída de inferência, por exemplo
     }
   }
