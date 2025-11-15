@@ -13,6 +13,6 @@ jobs:
     with:
       working-directory: global
       var-file: env/prod/terraform.tfvars
-      secrets:
-        ROLE_ARN: ${{ secrets.OC_INFRA_DEPLOYER_ROLE_ARN }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
+    secrets:
+      ROLE_ARN: ${{ secrets.OC_INFRA_DEPLOYER_ROLE_ARN }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
