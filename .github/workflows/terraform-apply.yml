@@ -9,11 +9,10 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    uses: ./.github/workflows/reusable-terraform.yml
+    uses: ./.github/workflows/commons/reusable-terraform.yml
     with:
       working-directory: global
-      backend-key: infra/terraform.tfstate
-      var-file: terraform.tfvars
-    secrets:
-      ROLE_ARN: ${{ secrets.OC_INFRA_DEPLOYER_ROLE_ARN }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
+      var-file: env/prod/terraform.tfvars
+      secrets:
+        ROLE_ARN: ${{ secrets.OC_INFRA_DEPLOYER_ROLE_ARN }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
