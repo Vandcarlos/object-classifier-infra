@@ -9,7 +9,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    uses: ./.github/workflows/commons/reusable-terraform.yml
+    uses: ./.github/workflows/reusable-terraform.yml
     with:
       working-directory: global
       var-file: env/prod/terraform.tfvars
