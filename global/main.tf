@@ -12,7 +12,7 @@ terraform {
 data "aws_caller_identity" "me" {}
 
 module "iam_github" {
-  source = "./global/iam_github"
+  source = "iam_github"
 
   aws_region = var.aws_region
   repos = {
@@ -30,7 +30,7 @@ module "iam_github" {
 }
 
 module "artifacts" {
-  source = "./global/storage/artifacts"
+  source = "storage/artifacts"
 
   bucket_name = "oc-artifacts-vandcarlos-ml"
   producers = {
