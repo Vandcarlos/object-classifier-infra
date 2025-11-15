@@ -4,7 +4,6 @@ output "roles" {
     key => {
       name      = var.allowed_repos[key].name
       role_name = role.name
-
     }
   }
 }
